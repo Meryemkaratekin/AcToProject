@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="ACTO">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8f4ee"/>
+      <stop offset="55%" style="stop-color:#f3ede7"/>
+      <stop offset="100%" style="stop-color:#ead7c1"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect x="72" y="72" width="1056" height="486" rx="36" fill="#fffbf7" stroke="rgba(201,114,44,0.2)" stroke-width="2"/>
+  <text x="600" y="280" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="96" font-weight="900" fill="#19140f" letter-spacing="-0.02em">ACTO</text>
+  <text x="600" y="360" text-anchor="middle" font-family="system-ui, sans-serif" font-size="34" fill="#595043">Sosyal deneyim platformu</text>
+  <rect x="500" y="420" width="200" height="8" rx="4" fill="#c9722c"/>
+</svg>

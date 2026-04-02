@@ -1,0 +1,77 @@
+.wrap { position: relative; }
+
+.control {
+  position: relative;
+}
+
+.toggle {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: var(--txt3);
+  cursor: pointer;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+}
+
+.toggle:hover {
+  background: rgba(25, 20, 15, 0.06);
+}
+
+.list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1.5px solid rgba(232,130,26,0.3);
+  border-radius: 10px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  z-index: 300;
+  max-height: 280px;
+  overflow-y: auto;
+  list-style: none;
+  animation: slideDown 0.18s ease;
+}
+
+.item {
+  padding: 10px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.15s;
+  color: var(--txt);
+}
+.item:hover { background: var(--amber-bg); }
+
+.item.active {
+  background: rgba(232, 130, 26, 0.1);
+  color: var(--amber);
+  font-weight: 600;
+}
+
+.groupTitle {
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--txt3);
+  background: rgba(25, 20, 15, 0.02);
+  cursor: default !important;
+}
+
+.icon {
+  opacity: 0.6;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
