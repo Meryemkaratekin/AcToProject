@@ -761,6 +761,7 @@
   overflow: hidden;
   border-radius: 36px;
   animation: slideInUp 0.9s ease-out;
+  width: 100%;
 }
 
 @keyframes slideInUp {
@@ -803,6 +804,7 @@
   z-index: 1;
   text-align: right;
   overflow-wrap: anywhere;
+  min-width: 0;
 }
 
 .waitlistCopy > .sectionTitle,
@@ -843,6 +845,7 @@
   position: relative;
   backdrop-filter: blur(8px);
   animation: slideInUp 0.7s ease-out;
+  min-width: 0;
 }
 
 .waitlistForm .form-input,
@@ -1021,9 +1024,11 @@
   }
 
   .waitlistWrap {
-    padding: 36px 24px;
-    gap: 32px;
+    padding: 28px 18px !important;
+    gap: 20px !important;
     grid-template-columns: 1fr;
+    border-radius: 24px;
+    width: 100%;
   }
 
   .waitlistWrap::before {
@@ -1038,17 +1043,31 @@
   }
 
   .waitlistSection {
-    padding-top: 72px !important;
-    padding-bottom: 72px !important;
+    padding-top: 56px !important;
+    padding-bottom: 56px !important;
   }
 
   .waitlistCopy {
     text-align: left;
+    padding-right: 0;
+  }
+
+  .waitlistCopy > .sectionTitle,
+  .waitlistCopy h2 {
+    font-size: clamp(26px, 9vw, 34px) !important;
+    line-height: 1.14;
+  }
+
+  .waitlistCopy p {
+    margin-top: 14px;
+    font-size: 14px;
+    line-height: 1.7;
   }
 
   .waitlistForm {
-    gap: 18px !important;
-    padding: 28px 20px !important;
+    gap: 14px !important;
+    padding: 18px 14px !important;
+    border-radius: 22px;
   }
 
   .waitlistForm .form-input,
@@ -1056,8 +1075,16 @@
   .waitlistForm .form-textarea {
     text-align: left !important;
     direction: ltr;
-    padding: 14px 16px !important;
+    padding: 13px 14px !important;
+    min-height: 46px !important;
+    font-size: 14px !important;
+  }
+
+  .waitlistForm button {
+    width: 100%;
     min-height: 48px !important;
+    padding: 14px 18px !important;
+    font-size: 14px !important;
   }
 
   .waitlistForm .form-input::placeholder,
@@ -1083,12 +1110,13 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    width: 100%;
+    gap: 0;
+    width: 52px;
+    height: 52px;
     margin-top: 8px;
-    padding: 14px 18px;
+    padding: 0;
     border: 1px solid rgba(25, 20, 15, 0.08);
-    border-radius: 999px;
+    border-radius: 50%;
     background: rgba(255, 251, 246, 0.9);
     color: var(--txt);
     font-family: 'Plus Jakarta Sans', sans-serif;
@@ -1100,7 +1128,7 @@
 
   .mobileLoadMoreIcon {
     color: var(--amber);
-    font-size: 18px;
+    font-size: 22px;
     line-height: 1;
   }
 }
@@ -1111,8 +1139,8 @@
   .searchInner,
   .proofInner,
   .waitlistWrap {
-    padding-left: 18px;
-    padding-right: 18px;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
   }
 
   .heroActions > * {
@@ -1135,5 +1163,63 @@
   .eventCarousel > div,
   .eventCarousel > article {
     max-width: 100%;
+  }
+
+  .waitlistSection {
+    padding-top: 44px !important;
+    padding-bottom: 44px !important;
+  }
+
+  .waitlistWrap {
+    gap: 16px !important;
+    border-radius: 20px;
+  }
+
+  .waitlistWrap::before,
+  .waitlistWrap::after {
+    display: none;
+  }
+
+  .waitlistCopy {
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .waitlistCopy > span {
+    margin-bottom: 10px;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+  }
+
+  .waitlistCopy > .sectionTitle,
+  .waitlistCopy h2 {
+    font-size: clamp(22px, 8vw, 28px) !important;
+    line-height: 1.18;
+    letter-spacing: -0.01em;
+  }
+
+  .waitlistCopy p {
+    font-size: 13px;
+    line-height: 1.6;
+    margin-top: 12px;
+  }
+
+  .waitlistForm {
+    padding: 14px 12px !important;
+    gap: 12px !important;
+    border-radius: 18px;
+  }
+
+  .waitlistForm .form-input,
+  .waitlistForm .form-select,
+  .waitlistForm .form-textarea {
+    padding: 12px !important;
+    min-height: 44px !important;
+    border-radius: 14px !important;
+  }
+
+  .waitlistForm button {
+    min-height: 46px !important;
+    border-radius: 14px !important;
   }
 }

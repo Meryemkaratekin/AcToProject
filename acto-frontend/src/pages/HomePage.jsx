@@ -433,7 +433,6 @@ export default function HomePage({
                 )
               }
             >
-              <span>Asagi in</span>
               <span className={styles.mobileLoadMoreIcon}>↓</span>
             </button>
           )}
@@ -531,20 +530,6 @@ export default function HomePage({
                 →
               </button>
             </div>
-          )}
-          {isMobileCards && visibleBlogCount < featuredBlogs.length && (
-            <button
-              type="button"
-              className={styles.mobileLoadMore}
-              onClick={() =>
-                setVisibleBlogCount((current) =>
-                  Math.min(current + 3, featuredBlogs.length),
-                )
-              }
-            >
-              <span>Diger yazilari goster</span>
-              <span className={styles.mobileLoadMoreIcon}>↓</span>
-            </button>
           )}
         </div>
       </section>
