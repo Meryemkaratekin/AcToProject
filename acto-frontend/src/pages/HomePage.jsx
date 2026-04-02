@@ -504,6 +504,19 @@ export default function HomePage({
               </article>
             ))}
           </div>
+          {isMobileCards && visibleBlogCount < featuredBlogs.length && (
+            <button
+              type="button"
+              className={styles.mobileLoadMore}
+              onClick={() =>
+                setVisibleBlogCount((current) =>
+                  Math.min(current + 3, featuredBlogs.length),
+                )
+              }
+            >
+              <span className={styles.mobileLoadMoreIcon}>↓</span>
+            </button>
+          )}
           {!isMobileCards && desktopBlogPages > 1 && (
             <div className={styles.desktopPager}>
               <button
