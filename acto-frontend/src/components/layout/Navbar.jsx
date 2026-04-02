@@ -120,7 +120,7 @@ export default function Navbar({ user, openLogin, openRegister, onLogout }) {
               </div>
             </div>
           ) : (
-            <>
+            <div className={styles.guestActions}>
               <button
                 className="btn-ghost"
                 style={{ padding: "8px 18px", fontSize: 13 }}
@@ -135,7 +135,7 @@ export default function Navbar({ user, openLogin, openRegister, onLogout }) {
               >
                 Ücretsiz Başla
               </button>
-            </>
+            </div>
           )}
         </div>
 

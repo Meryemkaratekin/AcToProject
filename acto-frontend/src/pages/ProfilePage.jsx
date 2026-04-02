@@ -2,9 +2,14 @@ import React, { useRef, useState } from 'react'
 import { INTERESTS_LIST, BADGES, SAMPLE_ACTIVITIES, SAMPLE_GROUPS } from '../data/profile'
 import styles from './ProfilePage.module.css'
 
-const TABS = ['Aktiviteler', 'Etkinliklerim', 'Favoriler', 'Yazılarım', 'Gruplar', 'Rozetler']
+const TABS = ['Aktiviteler', 'Etkinliklerim', 'Katildiklarim', 'Favoriler', 'Yazilarim', 'Gruplar', 'Rozetler']
 
-export default function ProfilePage({ user, onUpdateUser, showToast, events }) {
+function getMapsUrl(event) {
+  const location = [event.district || event.city, event.city].filter(Boolean).join(', ')
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`
+}
+
+export default function ProfilePage({ user, onUpdateUser, onRateEvent, showToast, events }) {
   const fileInputRef = useRef(null)
   const [tab, setTab] = useState('Aktiviteler')
   const [editing, setEditing] = useState(false)
@@ -22,12 +27,13 @@ export default function ProfilePage({ user, onUpdateUser, showToast, events }) {
   })
 
   const createdEvents = events.filter((event) => user.createdEventIds?.includes(event.id))
+  const joinedEvents = events.filter((event) => user.joined?.includes(event.id))
   const favoriteEvents = events.filter((event) => user.favoriteEventIds?.includes(event.id))
   const ownBlogs = (user.blogPosts || []).slice().sort((a, b) => Number(b.id) - Number(a.id))
   const stats = [
-    [String(user.joined?.length || 0), 'Katılım'],
-    [String(createdEvents.length), 'Oluşturulan'],
-    [String(user.followers ?? 128), 'Takipçi'],
+    [String(joinedEvents.length || 0), 'Katilim'],
+    [String(createdEvents.length), 'Olusturulan'],
+    [String(user.followers ?? 128), 'Takipci'],
     [String(user.following ?? 0), 'Takipte'],
   ]
 
@@ -46,7 +52,7 @@ export default function ProfilePage({ user, onUpdateUser, showToast, events }) {
   function saveProfile() {
     onUpdateUser({ ...user, ...form })
     setEditing(false)
-    showToast('Profil güncellendi.')
+    showToast('Profil guncellendi.')
   }
 
   function toggleInterest(interest) {
@@ -59,7 +65,7 @@ export default function ProfilePage({ user, onUpdateUser, showToast, events }) {
 
   function publishBlog() {
     if (!blogForm.title.trim() || !blogForm.summary.trim()) {
-      showToast('Blog yazısı için başlık ve özet alanını doldurun.')
+      showToast('Blog yazisi icin baslik ve ozet alanini doldurun.')
       return
     }
 
@@ -80,8 +86,57 @@ export default function ProfilePage({ user, onUpdateUser, showToast, events }) {
       blogPosts: [nextPost, ...(prev.blogPosts || [])],
     }))
     setBlogForm({ title: '', category: 'Topluluk', summary: '', image: '' })
-    setTab('Yazılarım')
-    showToast('Blog yazın yayınlandı.')
+    setTab('Yazilarim')
+    showToast('Blog yazin yayinlandi.')
+  }
+
+  function renderEventCard(event, badgeLabel, badgeClassName, showRatingStatus = false) {
+    const rating = user.ratedEvents?.[event.id]
+    const completed = Boolean(event.completed) || [1, 2].includes(event.id)
+
+    return (
+      <div key={event.id} className={styles.evCard}>
+        <div className={styles.evImg}>
+          {event.img ? <img src={event.img} alt="" /> : <div className={styles.evImgPh}>ACTO</div>}
+        </div>
+        <div className={styles.evBody}>
+          <div className={styles.evTitle}>{event.title}</div>
+          <div className={styles.evLoc}>📍 {event.district}, {event.city}</div>
+          <div className={styles.evActions}>
+            <a href={getMapsUrl(event)} target="_blank" rel="noreferrer" className={styles.mapButton}>
+              Haritada Ac
+            </a>
+            <span className={badgeClassName}>{badgeLabel}</span>
+          </div>
+          {showRatingStatus && (
+            <div className={styles.ratingStatus}>
+              {completed
+                ? rating
+                  ? `Verdigin puan: ${rating}/5`
+                  : 'Etkinlik tamamlandi. Karttan puan verebilirsin.'
+                : 'Etkinlik tamamlandiginda puanlama acilir.'}
+            </div>
+          )}
+          {showRatingStatus && completed && (
+            <div className={styles.ratingActions}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  className={`${styles.ratingStar} ${star <= (rating || 0) ? styles.ratingStarActive : ''}`}
+                  onClick={() => {
+                    onRateEvent?.(event.id, star)
+                    showToast(`Puanin kaydedildi: ${star}/5`)
+                  }}
+                >
+                  ★
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -94,13 +149,13 @@ export default function ProfilePage({ user, onUpdateUser, showToast, events }) {
             <div className={styles.avatarWrap}>
               <div className={styles.avatar}>{user.photo ? <img src={user.photo} alt="" /> : user.name[0]}</div>
               <div className={styles.verified}>✓</div>
-              <div className={styles.proBadge}>Altın Tik Adayı</div>
+              <div className={styles.proBadge}>Altin Tik Adayi</div>
             </div>
             <h1 className={styles.name}>{user.name}</h1>
-            <p className={styles.handle}>@{user.name.toLowerCase().replace(/\s/g, '.')} • {user.city || 'İstanbul'}</p>
-            <p className={styles.bio}>{user.bio || 'Talep odaklı sosyal deneyimlerini ACTO üzerinde organize ediyor.'}</p>
+            <p className={styles.handle}>@{user.name.toLowerCase().replace(/\s/g, '.')} • {user.city || 'Istanbul'}</p>
+            <p className={styles.bio}>{user.bio || 'Talep odakli sosyal deneyimlerini ACTO uzerinde organize ediyor.'}</p>
             <div className={styles.identityRow}>
-              <span className={styles.identityBlue}>Telefon doğrulandı</span>
+              <span className={styles.identityBlue}>Telefon dogrulandi</span>
               <span className={styles.identityGold}>Profesyonel belge bekleniyor</span>
             </div>
             {user.interests?.length > 0 && (
@@ -118,10 +173,10 @@ export default function ProfilePage({ user, onUpdateUser, showToast, events }) {
             <div className={styles.karmaCard}>
               <div className={styles.karmaNum}>{Math.min(user.karma || 120, 1000)}</div>
               <div className={styles.karmaStars}>Trust Score</div>
-              <div className={styles.karmaLabel}>0 - 1000 güven puanı</div>
+              <div className={styles.karmaLabel}>0 - 1000 guven puani</div>
             </div>
             <button className="btn-amber" style={{ width: '100%', padding: 12, fontSize: 13 }} onClick={() => setEditing(true)}>
-              Profili Düzenle
+              Profili Duzenle
             </button>
           </div>
         </div>
@@ -159,66 +214,66 @@ export default function ProfilePage({ user, onUpdateUser, showToast, events }) {
         )}
 
         {tab === 'Etkinliklerim' && (
-          <div className={styles.eventsGrid}>
-            {createdEvents.length > 0 ? (
-              createdEvents.map((event) => (
-                <div key={event.id} className={styles.evCard}>
-                  <div className={styles.evImg}>
-                    {event.img ? <img src={event.img} alt="" /> : <div className={styles.evImgPh}>ACTO</div>}
-                  </div>
-                  <div className={styles.evBody}>
-                    <div className={styles.evTitle}>{event.title}</div>
-                    <div className={styles.evLoc}>📍 {event.district}, {event.city}</div>
-                    <span className={styles.joinedBadge}>Sahibi sensin</span>
+          <div className={styles.scrollPanel}>
+            <div className={styles.eventsGrid}>
+              {createdEvents.length > 0 ? (
+                createdEvents.map((event) => renderEventCard(event, 'Sahibi sensin', styles.joinedBadge))
+              ) : (
+                <div className={styles.actItem}>
+                  <div className={styles.actIcon}>+</div>
+                  <div>
+                    <div className={styles.actTitle}>Henuz olusturdugun talep yok</div>
+                    <div className={styles.actSub}>Create sayfasindan ilk etkinligini fotografiyla birlikte olusturabilirsin.</div>
                   </div>
                 </div>
-              ))
-            ) : (
-              <div className={styles.actItem}>
-                <div className={styles.actIcon}>+</div>
-                <div>
-                  <div className={styles.actTitle}>Henüz oluşturduğun talep yok</div>
-                  <div className={styles.actSub}>Create sayfasından ilk etkinliğini fotoğrafıyla birlikte oluşturabilirsin.</div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {tab === 'Katildiklarim' && (
+          <div className={styles.scrollPanel}>
+            <div className={styles.eventsGrid}>
+              {joinedEvents.length > 0 ? (
+                joinedEvents.map((event) => renderEventCard(event, 'Katildin', styles.joinedBadge, true))
+              ) : (
+                <div className={styles.actItem}>
+                  <div className={styles.actIcon}>✓</div>
+                  <div>
+                    <div className={styles.actTitle}>Henuz katildigin etkinlik yok</div>
+                    <div className={styles.actSub}>Katildigin etkinlikler burada toplanir ve tamamlananlar icin puan verebilirsin.</div>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         )}
 
         {tab === 'Favoriler' && (
-          <div className={styles.eventsGrid}>
-            {favoriteEvents.length > 0 ? (
-              favoriteEvents.map((event) => (
-                <div key={event.id} className={styles.evCard}>
-                  <div className={styles.evImg}>
-                    {event.img ? <img src={event.img} alt="" /> : <div className={styles.evImgPh}>ACTO</div>}
-                  </div>
-                  <div className={styles.evBody}>
-                    <div className={styles.evTitle}>{event.title}</div>
-                    <div className={styles.evLoc}>📍 {event.district}, {event.city}</div>
-                    <span className={styles.favoriteBadge}>Favorinde</span>
+          <div className={styles.scrollPanel}>
+            <div className={styles.eventsGrid}>
+              {favoriteEvents.length > 0 ? (
+                favoriteEvents.map((event) => renderEventCard(event, 'Favorinde', styles.favoriteBadge))
+              ) : (
+                <div className={styles.actItem}>
+                  <div className={styles.actIcon}>♥</div>
+                  <div>
+                    <div className={styles.actTitle}>Henuz favori etkinligin yok</div>
+                    <div className={styles.actSub}>Begendigin etkinlikler burada toplanacak.</div>
                   </div>
                 </div>
-              ))
-            ) : (
-              <div className={styles.actItem}>
-                <div className={styles.actIcon}>♥</div>
-                <div>
-                  <div className={styles.actTitle}>Henüz favori etkinliğin yok</div>
-                  <div className={styles.actSub}>Beğendiğin etkinlikler burada toplanacak.</div>
-                </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         )}
 
-        {tab === 'Yazılarım' && (
+        {tab === 'Yazilarim' && (
           <div className={styles.blogLayout}>
             <div className={styles.blogComposer}>
-              <div className={styles.blogComposerTitle}>Yeni blog yazısı oluştur</div>
+              <div className={styles.blogComposerTitle}>Yeni blog yazisi olustur</div>
               <div className="form-group">
-                <label className="form-label">Başlık</label>
-                <input className="form-input" value={blogForm.title} onChange={(event) => setBlog('title', event.target.value)} placeholder="İlk yürüyüş grubumu nasıl topladım?" />
+                <label className="form-label">Baslik</label>
+                <input className="form-input" value={blogForm.title} onChange={(event) => setBlog('title', event.target.value)} placeholder="Ilk yuruyus grubumu nasil topladim?" />
               </div>
               <div className="form-row">
                 <div className="form-group">
@@ -226,42 +281,44 @@ export default function ProfilePage({ user, onUpdateUser, showToast, events }) {
                   <input className="form-input" value={blogForm.category} onChange={(event) => setBlog('category', event.target.value)} placeholder="Topluluk" />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Kapak görseli URL</label>
+                  <label className="form-label">Kapak gorseli URL</label>
                   <input className="form-input" value={blogForm.image} onChange={(event) => setBlog('image', event.target.value)} placeholder="https://..." />
                 </div>
               </div>
               <div className="form-group">
-                <label className="form-label">Özet / içerik</label>
-                <textarea className="form-textarea" value={blogForm.summary} onChange={(event) => setBlog('summary', event.target.value)} placeholder="Deneyimini, önerini veya topluluk içgörünü yaz..." />
+                <label className="form-label">Ozet / icerik</label>
+                <textarea className="form-textarea" value={blogForm.summary} onChange={(event) => setBlog('summary', event.target.value)} placeholder="Deneyimini, onerini veya topluluk icgörünü yaz..." />
               </div>
               <button className="btn-amber" style={{ width: '100%', padding: 13, fontSize: 14, borderRadius: 'var(--rs)' }} onClick={publishBlog}>
-                Yazıyı Yayınla
+                Yaziyi Yayinla
               </button>
             </div>
 
-            <div className={styles.blogList}>
-              {ownBlogs.length > 0 ? (
-                ownBlogs.map((post) => (
-                  <article key={post.id} className={styles.blogPostCard}>
-                    <div className={styles.blogPostImage}>
-                      <img src={post.image} alt={post.title} />
+            <div className={styles.scrollPanel}>
+              <div className={styles.blogList}>
+                {ownBlogs.length > 0 ? (
+                  ownBlogs.map((post) => (
+                    <article key={post.id} className={styles.blogPostCard}>
+                      <div className={styles.blogPostImage}>
+                        <img src={post.image} alt={post.title} />
+                      </div>
+                      <div className={styles.blogPostBody}>
+                        <span className={styles.blogBadge}>{post.category}</span>
+                        <div className={styles.blogPostTitle}>{post.title}</div>
+                        <p className={styles.blogPostSummary}>{post.summary}</p>
+                      </div>
+                    </article>
+                  ))
+                ) : (
+                  <div className={styles.actItem}>
+                    <div className={styles.actIcon}>✎</div>
+                    <div>
+                      <div className={styles.actTitle}>Henuz yayinladigin blog yazisi yok</div>
+                      <div className={styles.actSub}>Yazdigin ilk yazi anasayfadaki topluluk yazilari bolumunde de gorunecek.</div>
                     </div>
-                    <div className={styles.blogPostBody}>
-                      <span className={styles.blogBadge}>{post.category}</span>
-                      <div className={styles.blogPostTitle}>{post.title}</div>
-                      <p className={styles.blogPostSummary}>{post.summary}</p>
-                    </div>
-                  </article>
-                ))
-              ) : (
-                <div className={styles.actItem}>
-                  <div className={styles.actIcon}>✎</div>
-                  <div>
-                    <div className={styles.actTitle}>Henüz yayınladığın blog yazısı yok</div>
-                    <div className={styles.actSub}>Yazdığın ilk yazı anasayfadaki topluluk yazıları bölümünde de görünecek.</div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -290,7 +347,7 @@ export default function ProfilePage({ user, onUpdateUser, showToast, events }) {
                 </div>
                 <div className={styles.badgeName}>{badge.name}</div>
                 <div className={styles.badgeDesc}>{badge.desc}</div>
-                {badge.earned && <div className={styles.badgeTag}>Kazanıldı</div>}
+                {badge.earned && <div className={styles.badgeTag}>Kazanildi</div>}
               </div>
             ))}
           </div>
@@ -304,16 +361,16 @@ export default function ProfilePage({ user, onUpdateUser, showToast, events }) {
               ×
             </button>
             <div style={{ fontFamily: '"Playfair Display", serif', fontSize: 24, fontWeight: 900, marginBottom: 4 }}>
-              Profili Düzenle
+              Profili Duzenle
             </div>
             <p style={{ fontSize: 13, color: 'var(--txt2)', marginBottom: 20 }}>
-              Profil fotoğrafını, biyografini ve ilgi alanlarını güncelle.
+              Profil fotografini, biyografini ve ilgi alanlarini guncelle.
             </p>
 
             <div className="form-group">
-              <label className="form-label">Profil Fotoğrafı</label>
+              <label className="form-label">Profil Fotografi</label>
               <div className={styles.uploadProfile} onClick={() => fileInputRef.current?.click()}>
-                {form.photo ? <img src={form.photo} alt="" /> : <span>Fotoğraf Yükle</span>}
+                {form.photo ? <img src={form.photo} alt="" /> : <span>Fotograf Yukle</span>}
               </div>
               <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoUpload} />
             </div>
@@ -323,10 +380,10 @@ export default function ProfilePage({ user, onUpdateUser, showToast, events }) {
             </div>
             <div className="form-group">
               <label className="form-label">Biyografi</label>
-              <textarea className="form-textarea" placeholder="Kendini tanıt..." value={form.bio} onChange={(event) => set('bio', event.target.value)} />
+              <textarea className="form-textarea" placeholder="Kendini tanit..." value={form.bio} onChange={(event) => set('bio', event.target.value)} />
             </div>
             <div className="form-group">
-              <label className="form-label">İlgi Alanları</label>
+              <label className="form-label">Ilgi Alanlari</label>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
                 {INTERESTS_LIST.map((interest) => (
                   <button

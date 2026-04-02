@@ -158,6 +158,39 @@ export default function App() {
     syncCurrentUser((prev) => ({ ...prev, favoriteEventIds: nextFavorites }))
   }
 
+  function handleRateEvent(eventId, rating) {
+    if (!user) return
+
+    syncCurrentUser((prev) => ({
+      ...prev,
+      ratedEvents: {
+        ...(prev.ratedEvents || {}),
+        [eventId]: rating,
+      },
+    }))
+
+    setEvents((prev) =>
+      prev.map((event) => {
+        if (event.id !== eventId) return event
+
+        const ratedBy = {
+          ...(event.ratedBy || {}),
+          [user.email]: rating,
+        }
+        const ratings = Object.values(ratedBy).map(Number).filter(Boolean)
+        const averageRating = ratings.length
+          ? ratings.reduce((sum, value) => sum + value, 0) / ratings.length
+          : rating
+
+        return {
+          ...event,
+          ratedBy,
+          averageRating,
+        }
+      })
+    )
+  }
+
   function addEvent(newEvent) {
     setEvents((prev) => [newEvent, ...prev])
     syncCurrentUser((prev) =>
@@ -177,6 +210,7 @@ export default function App() {
     openLogin,
     openRegister,
     onToggleFav: handleToggleFav,
+    onRateEvent: handleRateEvent,
   }
 
   return (
@@ -206,7 +240,14 @@ export default function App() {
           path="/profile"
           element={
             user ? (
-              <ProfilePage user={user} onUpdateUser={syncCurrentUser} showToast={showToast} events={events} blogPosts={communityBlogs} />
+              <ProfilePage
+                user={user}
+                onUpdateUser={syncCurrentUser}
+                onRateEvent={handleRateEvent}
+                showToast={showToast}
+                events={events}
+                blogPosts={communityBlogs}
+              />
             ) : (
               <Navigate to="/" replace />
             )

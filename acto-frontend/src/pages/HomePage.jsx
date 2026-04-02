@@ -157,6 +157,7 @@ export default function HomePage({
   blogPosts,
   onJoin,
   onToggleFav,
+  onRateEvent,
   showToast,
   openLogin,
   openRegister,
@@ -166,10 +167,23 @@ export default function HomePage({
     useFilter(events);
   const [waitlist, setWaitlist] = useState({ name: "", email: "" });
   const [proofVisible, setProofVisible] = useState(false);
+  const [isMobileCards, setIsMobileCards] = useState(false);
+  const [visibleEventCount, setVisibleEventCount] = useState(2);
+  const [visibleBlogCount, setVisibleBlogCount] = useState(3);
+  const [desktopEventPage, setDesktopEventPage] = useState(0);
+  const [desktopBlogPage, setDesktopBlogPage] = useState(0);
   const proofRef = useRef(null);
 
-  const featuredEvents = filtered.slice(0, 3);
-  const featuredBlogs = blogPosts.slice(0, 3);
+  const featuredEvents = filtered.slice(0, 6);
+  const featuredBlogs = blogPosts;
+  const desktopEventPages = Math.max(1, Math.ceil(featuredEvents.length / 3));
+  const desktopBlogPages = Math.max(1, Math.ceil(featuredBlogs.length / 6));
+  const visibleEvents = isMobileCards
+    ? featuredEvents.slice(0, visibleEventCount)
+    : featuredEvents.slice(desktopEventPage * 3, desktopEventPage * 3 + 3);
+  const visibleBlogs = isMobileCards
+    ? featuredBlogs.slice(0, visibleBlogCount)
+    : featuredBlogs.slice(desktopBlogPage * 6, desktopBlogPage * 6 + 6);
 
   function handleWaitlistSubmit(event) {
     event.preventDefault();
@@ -193,6 +207,27 @@ export default function HomePage({
     observer.observe(proofRef.current);
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 768px)");
+    const sync = () => {
+      const mobile = media.matches;
+      setIsMobileCards(mobile);
+      setVisibleEventCount(mobile ? 2 : Math.min(featuredEvents.length || 3, 3));
+      setVisibleBlogCount(mobile ? 3 : featuredBlogs.length || 3);
+    };
+
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, [featuredBlogs.length, featuredEvents.length]);
+
+  useEffect(() => {
+    setDesktopEventPage(0);
+    setDesktopBlogPage(0);
+    setVisibleEventCount(2);
+    setVisibleBlogCount(3);
+  }, [search, city, category, featuredEvents.length, featuredBlogs.length]);
 
   return (
     <main className={styles.page}>
@@ -311,8 +346,8 @@ export default function HomePage({
         <div className="container">
           <div className={styles.sectionHeadRow}>
             <div>
-              <span className="section-eyebrow">Seçilmiş etkinlikler</span>
-              <h2 className={styles.sectionTitle}>Şu an öne çıkan kümeler</h2>
+              <span className="section-eyebrow">Öne çıkan etkinlikler</span>
+              <h2 className={styles.sectionTitle}>Bu hafta vitrindeki buluşmalar</h2>
             </div>
             <button className="btn-ghost" onClick={() => navigate("/events")}>
               Tümünü Gör
@@ -347,7 +382,7 @@ export default function HomePage({
           </div>
 
           <div className={styles.eventCarousel}>
-            {featuredEvents.map((ev, index) => (
+            {visibleEvents.map((ev, index) => (
               <EventCard
                 key={ev.id}
                 ev={ev}
@@ -355,11 +390,53 @@ export default function HomePage({
                 onJoin={onJoin}
                 onLogin={openLogin}
                 onToggleFav={onToggleFav}
+                onRateEvent={onRateEvent}
                 showToast={showToast}
                 index={index}
               />
             ))}
           </div>
+          {!isMobileCards && desktopEventPages > 1 && (
+            <div className={styles.desktopPager}>
+              <button
+                type="button"
+                className={styles.desktopPagerBtn}
+                onClick={() => setDesktopEventPage((current) => Math.max(current - 1, 0))}
+                disabled={desktopEventPage === 0}
+              >
+                ←
+              </button>
+              <span className={styles.desktopPagerLabel}>
+                {desktopEventPage + 1} / {desktopEventPages}
+              </span>
+              <button
+                type="button"
+                className={styles.desktopPagerBtn}
+                onClick={() =>
+                  setDesktopEventPage((current) =>
+                    Math.min(current + 1, desktopEventPages - 1),
+                  )
+                }
+                disabled={desktopEventPage === desktopEventPages - 1}
+              >
+                →
+              </button>
+            </div>
+          )}
+          {isMobileCards && visibleEventCount < featuredEvents.length && (
+            <button
+              type="button"
+              className={styles.mobileLoadMore}
+              onClick={() =>
+                setVisibleEventCount((current) =>
+                  Math.min(current + 2, featuredEvents.length),
+                )
+              }
+            >
+              <span>Asagi in</span>
+              <span className={styles.mobileLoadMoreIcon}>↓</span>
+            </button>
+          )}
         </div>
       </section>
 
@@ -383,7 +460,7 @@ export default function HomePage({
           </div>
 
           <div className={styles.storyList}>
-            {featuredBlogs.map((post) => (
+            {visibleBlogs.map((post) => (
               <article key={post.id} className={styles.storyRow}>
                 <div className={styles.storyImageWrap}>
                   <img
@@ -428,6 +505,47 @@ export default function HomePage({
               </article>
             ))}
           </div>
+          {!isMobileCards && desktopBlogPages > 1 && (
+            <div className={styles.desktopPager}>
+              <button
+                type="button"
+                className={styles.desktopPagerBtn}
+                onClick={() => setDesktopBlogPage((current) => Math.max(current - 1, 0))}
+                disabled={desktopBlogPage === 0}
+              >
+                ←
+              </button>
+              <span className={styles.desktopPagerLabel}>
+                {desktopBlogPage + 1} / {desktopBlogPages}
+              </span>
+              <button
+                type="button"
+                className={styles.desktopPagerBtn}
+                onClick={() =>
+                  setDesktopBlogPage((current) =>
+                    Math.min(current + 1, desktopBlogPages - 1),
+                  )
+                }
+                disabled={desktopBlogPage === desktopBlogPages - 1}
+              >
+                →
+              </button>
+            </div>
+          )}
+          {isMobileCards && visibleBlogCount < featuredBlogs.length && (
+            <button
+              type="button"
+              className={styles.mobileLoadMore}
+              onClick={() =>
+                setVisibleBlogCount((current) =>
+                  Math.min(current + 3, featuredBlogs.length),
+                )
+              }
+            >
+              <span>Diger yazilari goster</span>
+              <span className={styles.mobileLoadMoreIcon}>↓</span>
+            </button>
+          )}
         </div>
       </section>
 

@@ -52,6 +52,7 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   position: relative;
+  overflow-x: hidden;
 }
 
 body::before {
@@ -251,6 +252,13 @@ p, li {
   padding: 0 32px;
 }
 
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
 .section-eyebrow {
   display: block;
   font-size: 11px;
@@ -382,6 +390,22 @@ p, li {
   background: var(--bg3);
   border-radius: 3px;
   overflow: hidden;
+}
+
+@media (max-width: 768px) /* --bp-md */ {
+  .container {
+    padding: 0 16px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-box {
+    width: min(92vw, 560px) !important;
+    min-width: 0 !important;
+    padding: 28px 18px !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
